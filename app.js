@@ -9,26 +9,79 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 
+let isServer1OK = false;
+let isServer2OK = false;
+let isServer3OK = false;
+
 // Establish db connection
-const db = mysql.createConnection({
+const db1 = mysql.createConnection({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: process.env.DB_PORT_1,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
 });
 
-// Connect to MySQL
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL: ', err.stack);
-    return;
+const db2 = mysql.createConnection({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT_2,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
+
+const db3 = mysql.createConnection({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT_3,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
+
+function startServer() {
+  if (!isServer1OK && !isServer2OK && !isServer3OK) {
+    const port = process.env.PORT || 5000;
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
   }
-  console.log('Connected to MySQL');
+}
+
+// Connect to MySQL
+db1.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL on server 1: ', err.stack);
+    // Attempt to connect to server 2
+    db2.connect((err) => {
+      if (err) {
+        console.error('Error connecting to MySQL on server 2: ', err.stack);
+        // Attempt to connect to server 3
+        db3.connect((err) => {
+          if (err) {
+            console.error('Error connecting to MySQL on server 3: ', err.stack);
+            console.error('All servers are down. Cannot establish database connection.');
+          } else {
+            console.log('Connected to MySQL on server 3');
+            isServer3OK = true;
+          }
+        });
+      } else {
+        console.log('Connected to MySQL on server 2');
+        isServer2OK = true;
+      }
+    });
+  } else {
+    console.log('Connected to MySQL on server 1');
+    isServer1OK = true;
+  }
 });
 
 // Create a record
+
 app.post('/records', (req, res) => {
+  if (isServer1OK || isServer2OK || isServer3OK) {
+    return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
+  }
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
   console.log(req.body);
   const sql = 'INSERT INTO global_records (pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, islands) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
@@ -101,9 +154,6 @@ app.get('/records', (req, res) => {
 });
 
 
-
-
-
 // Read a single record by ID
 app.get('/records/:id', (req, res) => {
   const { id } = req.params;
@@ -123,6 +173,9 @@ app.get('/records/:id', (req, res) => {
 
 // Update a record by ID
 app.put('/records/:id', (req, res) => {
+  if (isServer1OK || isServer2OK || isServer3OK) {
+    return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
+  }
   const { id } = req.params;
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
   const sql = 'UPDATE global_records SET pxid = ?, apptid = ?, status = ?, TimeQueued = ?, QueueDate = ?, StartTime = ?, EndTime = ?, type = ?, isVirtual = ?, hospitalname = ?, IsHospital = ?, City = ?, Province = ?, RegionName = ?, mainspecialty = ?, age_x = ?, age_y = ?, gender = ?, island = ? WHERE id = ?';
@@ -158,7 +211,11 @@ app.put('/records/:id', (req, res) => {
 });
 
 // Delete a record by ID
+
 app.delete('/records/:id', (req, res) => {
+  if (isServer1OK || isServer2OK || isServer3OK) {
+    return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
+  }
   const { id } = req.params;
   const sql = 'DELETE FROM global_records WHERE pxid = ?';
   
