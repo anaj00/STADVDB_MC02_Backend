@@ -61,11 +61,9 @@ app.post('/records', (req, res) => {
 
 // Read all records
 app.get('/records', (req, res) => {
-  const { page, itemsPerPage } = req.query;
-  const offset = (page - 1) * itemsPerPage;
-  const sql = 'SELECT * FROM global_records LIMIT ?, ?';
+  const sql = 'SELECT * FROM global_records';
   
-  db.query(sql, [offset, parseInt(itemsPerPage)], (err, results) => {
+  db.query(sql, (err, results) => {
     if (err) {
       console.error('Error retrieving records: ', err);
       return res.status(500).json({ error: 'Internal server error' });
