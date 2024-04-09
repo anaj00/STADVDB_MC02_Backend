@@ -40,7 +40,7 @@ const db3 = mysql.createConnection({
 
 function startServer() {
   if (!isServer1OK && !isServer2OK && !isServer3OK) {
-    const port = process.env.PORT || 5000;
+    const port = process.env.PORT || 3001;
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
@@ -160,7 +160,7 @@ app.get('/records', (req, res) => {
 // Read a single record by ID
 app.get('/records/:id', (req, res) => {
   const { id } = req.params;
-  const sql = 'SELECT * FROM global_records WHERE id = ?';
+  const sql = 'SELECT * FROM global_records WHERE apptid = ?';
   
   db.query(sql, [id], (err, result) => {
     if (err) {
@@ -181,7 +181,7 @@ app.put('/records/:id', (req, res) => {
   }
   const { id } = req.params;
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
-  const sql = 'UPDATE global_records SET pxid = ?, apptid = ?, status = ?, TimeQueued = ?, QueueDate = ?, StartTime = ?, EndTime = ?, type = ?, isVirtual = ?, hospitalname = ?, IsHospital = ?, City = ?, Province = ?, RegionName = ?, mainspecialty = ?, age_x = ?, age_y = ?, gender = ?, island = ? WHERE id = ?';
+  const sql = 'UPDATE global_records SET pxid = ?, apptid = ?, status = ?, TimeQueued = ?, QueueDate = ?, StartTime = ?, EndTime = ?, type = ?, isVirtual = ?, hospitalname = ?, IsHospital = ?, City = ?, Province = ?, RegionName = ?, mainspecialty = ?, age_x = ?, age_y = ?, gender = ?, island = ? WHERE apptid = ?';
   const values = [pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island, id];
   
   db.beginTransaction((err) => {
@@ -220,7 +220,7 @@ app.delete('/records/:id', (req, res) => {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
   const { id } = req.params;
-  const sql = 'DELETE FROM global_records WHERE pxid = ?';
+  const sql = 'DELETE FROM global_records WHERE apptid = ?';
   
   db.beginTransaction((err) => {
     if (err) {
@@ -252,7 +252,7 @@ app.delete('/records/:id', (req, res) => {
 });
 
 // Start the server
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
