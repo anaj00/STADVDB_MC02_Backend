@@ -63,16 +63,19 @@ db1.connect((err) => {
           } else {
             console.log('Connected to MySQL on server 3');
             isServer3OK = true;
+            db = db3;
           }
         });
       } else {
         console.log('Connected to MySQL on server 2');
         isServer2OK = true;
+        db = db2
       }
     });
   } else {
     console.log('Connected to MySQL on server 1');
     isServer1OK = true;
+    db = db1;
   }
 });
 
