@@ -59,18 +59,49 @@ app.post('/records', (req, res) => {
   });
 });
 
+
 // Read all records
 app.get('/records', (req, res) => {
-  const sql = 'SELECT * FROM global_records';
-  
-  db.query(sql, (err, results) => {
+  const { page, itemsPerPage, search } = req.query;
+  const offset = (page - 1) * itemsPerPage;
+  let sql = 'SELECT * FROM global_records';
+  let countSql = 'SELECT COUNT(*) AS totalCount FROM global_records';
+  const queryParams = [];
+
+  // Add search condition if provided
+  if (search) {
+    sql += ' WHERE pxid LIKE ? OR apptid LIKE ?'; // Adjust conditions based on your search criteria
+    countSql += ' WHERE pxid LIKE ? OR apptid LIKE ?'; // Adjust conditions based on your search criteria
+    queryParams.push(`%${search}%`, `%${search}%`);
+  }
+
+  sql += ' LIMIT ?, ?';
+  queryParams.push(offset, parseInt(itemsPerPage));
+
+  db.query(sql, queryParams, (err, results) => {
     if (err) {
       console.error('Error retrieving records: ', err);
       return res.status(500).json({ error: 'Internal server error' });
     }
-    return res.json(results);
+    
+    // Query total count of records
+    db.query(countSql, queryParams.slice(0, -2), (countErr, countResults) => {
+      if (countErr) {
+        console.error('Error counting records: ', countErr);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      
+      const totalCount = countResults[0].totalCount;
+      const totalPages = Math.ceil(totalCount / parseInt(itemsPerPage));
+      
+      return res.json({ items: results, total: totalCount, totalPages: totalPages });
+    });
   });
 });
+
+
+
+
 
 // Read a single record by ID
 app.get('/records/:id', (req, res) => {
