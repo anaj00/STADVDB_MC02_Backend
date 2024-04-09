@@ -79,7 +79,7 @@ db1.connect((err) => {
 // Create a record
 
 app.post('/records', (req, res) => {
-  if (isServer1OK || isServer2OK || isServer3OK) {
+  if (!isServer1OK) {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
@@ -173,7 +173,7 @@ app.get('/records/:id', (req, res) => {
 
 // Update a record by ID
 app.put('/records/:id', (req, res) => {
-  if (isServer1OK || isServer2OK || isServer3OK) {
+  if (!isServer1OK) {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
   const { id } = req.params;
@@ -213,7 +213,7 @@ app.put('/records/:id', (req, res) => {
 // Delete a record by ID
 
 app.delete('/records/:id', (req, res) => {
-  if (isServer1OK || isServer2OK || isServer3OK) {
+  if (!isServer1OK) {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
   const { id } = req.params;
