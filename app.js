@@ -61,9 +61,11 @@ app.post('/records', (req, res) => {
 
 // Read all records
 app.get('/records', (req, res) => {
-  const sql = 'SELECT * FROM global_records';
+  const { page, itemsPerPage } = req.query;
+  const offset = (page - 1) * itemsPerPage;
+  const sql = 'SELECT * FROM global_records LIMIT ?, ?';
   
-  db.query(sql, (err, results) => {
+  db.query(sql, [offset, parseInt(itemsPerPage)], (err, results) => {
     if (err) {
       console.error('Error retrieving records: ', err);
       return res.status(500).json({ error: 'Internal server error' });
@@ -160,7 +162,7 @@ app.delete('/records/:id', (req, res) => {
 });
 
 // Start the server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
