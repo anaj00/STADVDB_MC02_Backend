@@ -30,9 +30,10 @@ db.connect((err) => {
 // Create a record
 app.post('/records', (req, res) => {
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
-  const sql = 'INSERT INTO global_records (pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  console.log(req.body);
+  const sql = 'INSERT INTO global_records (pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, islands) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
   const values = [pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island];
-  
+  console.log("hi");
   db.beginTransaction((err) => {
     if (err) {
       console.error('Error beginning transaction: ', err);
@@ -159,7 +160,7 @@ app.put('/records/:id', (req, res) => {
 // Delete a record by ID
 app.delete('/records/:id', (req, res) => {
   const { id } = req.params;
-  const sql = 'DELETE FROM global_records WHERE id = ?';
+  const sql = 'DELETE FROM global_records WHERE pxid = ?';
   
   db.beginTransaction((err) => {
     if (err) {
