@@ -1,6 +1,6 @@
 // Import dependencies
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const cors = require('cors');
 require('dotenv').config(); // Load environment variables from .env file
 
@@ -80,29 +80,32 @@ db1.connect((err) => {
 });
 
 // Create a record
-
 app.post('/records', (req, res) => {
   if (!isServer1OK) {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
+
   const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
-  console.log(req.body);
+
   const sql = 'INSERT INTO global_records (pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, islands) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
   const values = [pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island];
-  console.log("hi");
+
   db.beginTransaction((err) => {
+    console.log("hi1");
     if (err) {
       console.error('Error beginning transaction: ', err);
       return res.status(500).json({ error: 'Internal server error' });
     }
     
     db.query(sql, values, (err, result) => {
+      console.log("hi2");
       if (err) {
         console.error('Error creating record: ', err);
         return db.rollback(() => {
           return res.status(500).json({ error: 'Internal server error' });
         });
       }
+
       db.commit((err) => {
         if (err) {
           console.error('Error committing transaction: ', err);
@@ -156,23 +159,22 @@ app.get('/records', (req, res) => {
   });
 });
 
-
 // Read a single record by ID
-app.get('/records/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'SELECT * FROM global_records WHERE apptid = ?';
+// app.get('/records/:id', (req, res) => {
+//   const { id } = req.params;
+//   const sql = 'SELECT * FROM global_records WHERE apptid = ?';
   
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error('Error retrieving record: ', err);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    if (!result[0]) {
-      return res.status(404).json({ error: 'Record not found' });
-    }
-    return res.json(result[0]);
-  });
-});
+//   db.query(sql, [id], (err, result) => {
+//     if (err) {
+//       console.error('Error retrieving record: ', err);
+//       return res.status(500).json({ error: 'Internal server error' });
+//     }
+//     if (!result[0]) {
+//       return res.status(404).json({ error: 'Record not found' });
+//     }
+//     return res.json(result[0]);
+//   });
+// });
 
 // Update a record by ID
 app.put('/records/:id', (req, res) => {
@@ -215,7 +217,6 @@ app.put('/records/:id', (req, res) => {
 });
 
 // Delete a record by ID
-
 app.delete('/records/:id', (req, res) => {
   if (!isServer1OK) {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
