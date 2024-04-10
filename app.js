@@ -252,6 +252,61 @@ app.delete('/records/:id', (req, res) => {
   });
 });
 
+
+// Generate report
+app.get('/generatetxt', async (req, res) => {
+  try {
+    if (!isServer1OK) {
+      return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
+    }
+
+    const sql = `
+      SELECT
+          YEAR(StartTime) AS AppointmentYear,
+          COUNT(*) AS AppointmentCount
+      FROM
+        seriousmd_global.global_records
+      WHERE
+          YEAR(StartTime) >= 2016 AND
+          YEAR(StartTime) <= 2024
+      GROUP BY
+          AppointmentYear
+      ORDER BY
+          AppointmentYear;
+    `;
+
+    db.query(sql, async (err, result) => {
+      if (err) {
+        console.error('Error fetching data: ', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      try {
+        let txtContent = 'Year\tAppointment Count\n';
+        
+        result.forEach(row => {
+          txtContent += `${row.AppointmentYear}\t${row.AppointmentCount}\n`;
+        });
+
+        res.set({
+          'Content-Type': 'text/plain',
+          'Content-Disposition': 'attachment; filename="report.txt"'
+        });
+
+        res.send(txtContent);
+      } catch (error) {
+        console.error('Error generating TXT:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error handling request:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 // Start the server
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
