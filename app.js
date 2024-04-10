@@ -180,9 +180,10 @@ app.put('/records/:id', (req, res) => {
     return res.status(403).json({ error: 'Write operations not allowed when connected to any server' });
   }
   const { id } = req.params;
-  const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island } = req.body;
-  const sql = 'UPDATE global_records SET pxid = ?, apptid = ?, status = ?, TimeQueued = ?, QueueDate = ?, StartTime = ?, EndTime = ?, type = ?, isVirtual = ?, hospitalname = ?, IsHospital = ?, City = ?, Province = ?, RegionName = ?, mainspecialty = ?, age_x = ?, age_y = ?, gender = ?, island = ? WHERE apptid = ?';
-  const values = [pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, island, id];
+  const { pxid, apptid, status, TimeQueued, QueueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, islands } = req.body;
+  const sql = 'UPDATE global_records SET pxid = ?, apptid = ?, status = ?, TimeQueued = ?, QueueDate = ?, StartTime = ?, EndTime = ?, type = ?, isVirtual = ?, hospitalname = ?, IsHospital = ?, City = ?, Province = ?, RegionName = ?, mainspecialty = ?, age_x = ?, age_y = ?, gender = ?, islands = ? WHERE apptid = ?';
+  const queueDate = new Date(req.body.QueueDate).toISOString().slice(0, 19).replace('T', ' ');
+  const values = [pxid, apptid, status, TimeQueued, queueDate, StartTime, EndTime, type, isVirtual, hospitalname, IsHospital, City, Province, RegionName, mainspecialty, age_x, age_y, gender, islands, id];
   
   db.beginTransaction((err) => {
     if (err) {
