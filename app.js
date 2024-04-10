@@ -1,6 +1,6 @@
 // Import dependencies
 const express = require('express');
-const mysql = require('mysql2');
+const mysql = require('mysql');
 const cors = require('cors');
 require('dotenv').config(); // Load environment variables from .env file
 
@@ -160,21 +160,21 @@ app.get('/records', (req, res) => {
 });
 
 // Read a single record by ID
-// app.get('/records/:id', (req, res) => {
-//   const { id } = req.params;
-//   const sql = 'SELECT * FROM global_records WHERE apptid = ?';
+app.get('/records/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = 'SELECT * FROM global_records WHERE apptid = ?';
   
-//   db.query(sql, [id], (err, result) => {
-//     if (err) {
-//       console.error('Error retrieving record: ', err);
-//       return res.status(500).json({ error: 'Internal server error' });
-//     }
-//     if (!result[0]) {
-//       return res.status(404).json({ error: 'Record not found' });
-//     }
-//     return res.json(result[0]);
-//   });
-// });
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error('Error retrieving record: ', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    if (!result[0]) {
+      return res.status(404).json({ error: 'Record not found' });
+    }
+    return res.json(result[0]);
+  });
+});
 
 // Update a record by ID
 app.put('/records/:id', (req, res) => {
